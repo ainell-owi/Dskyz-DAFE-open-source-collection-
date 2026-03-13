@@ -1,0 +1,80 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0
+// © Dskyz
+
+//@version=6
+indicator("DAFE Momentum Ribbon [Dskyz]", shorttitle = "DAFE-MR", overlay = true)
+
+// ─────────────────────────────────────────────
+//  INPUTS
+// ─────────────────────────────────────────────
+int   fastLen    = input.int(8,    "Fast EMA",     minval = 1)
+int   slowLen    = input.int(89,   "Slow EMA",     minval = 2)
+bool  showLabels = input.bool(true, "Show Signal Labels")
+color bullCol    = input.color(color.new(color.teal,  75), "Bull Color")
+color bearCol    = input.color(color.new(color.red,   75), "Bear Color")
+
+// ─────────────────────────────────────────────
+//  RIBBON EMA PERIODS  (8 evenly-spaced steps)
+// ─────────────────────────────────────────────
+//  Periods are interpolated linearly between fastLen and slowLen so that the
+//  ribbon automatically adapts when the user changes the inputs.
+// ─────────────────────────────────────────────
+int steps = 7   // number of intervals between the 8 EMAs
+float step = (slowLen - fastLen) / steps
+
+float e1 = ta.ema(close, fastLen)
+float e2 = ta.ema(close, int(fastLen + step * 1))
+float e3 = ta.ema(close, int(fastLen + step * 2))
+float e4 = ta.ema(close, int(fastLen + step * 3))
+float e5 = ta.ema(close, int(fastLen + step * 4))
+float e6 = ta.ema(close, int(fastLen + step * 5))
+float e7 = ta.ema(close, int(fastLen + step * 6))
+float e8 = ta.ema(close, slowLen)
+
+// ─────────────────────────────────────────────
+//  RIBBON STATE
+// ─────────────────────────────────────────────
+bool  isBull  = e1 > e8
+color ribCol  = isBull ? bullCol : bearCol
+
+// ─────────────────────────────────────────────
+//  PLOTS
+// ─────────────────────────────────────────────
+color lineCol = color.new(color.gray, 70)
+
+p1 = plot(e1, "EMA 1",  color = lineCol, linewidth = 1)
+p2 = plot(e2, "EMA 2",  color = lineCol, linewidth = 1)
+p3 = plot(e3, "EMA 3",  color = lineCol, linewidth = 1)
+p4 = plot(e4, "EMA 4",  color = lineCol, linewidth = 1)
+p5 = plot(e5, "EMA 5",  color = lineCol, linewidth = 1)
+p6 = plot(e6, "EMA 6",  color = lineCol, linewidth = 1)
+p7 = plot(e7, "EMA 7",  color = lineCol, linewidth = 1)
+p8 = plot(e8, "EMA 8",  color = lineCol, linewidth = 1)
+
+fill(p1, p2, color = ribCol)
+fill(p2, p3, color = ribCol)
+fill(p3, p4, color = ribCol)
+fill(p4, p5, color = ribCol)
+fill(p5, p6, color = ribCol)
+fill(p6, p7, color = ribCol)
+fill(p7, p8, color = ribCol)
+
+// ─────────────────────────────────────────────
+//  SIGNALS
+// ─────────────────────────────────────────────
+bool momentumUp   = ta.crossover(e1,  e8)
+bool momentumDown = ta.crossunder(e1, e8)
+
+if showLabels
+    if momentumUp
+        label.new(bar_index, low,  "▲ Momentum Up",   style = label.style_label_up,
+                  color = color.new(color.teal, 10), textcolor = color.white, size = size.small)
+    if momentumDown
+        label.new(bar_index, high, "▼ Momentum Down", style = label.style_label_down,
+                  color = color.new(color.red,  10), textcolor = color.white, size = size.small)
+
+// ─────────────────────────────────────────────
+//  ALERTS
+// ─────────────────────────────────────────────
+alertcondition(momentumUp,   "MR Momentum Up",   "DAFE-MR: Fast EMA crossed ABOVE the slow EMA")
+alertcondition(momentumDown, "MR Momentum Down", "DAFE-MR: Fast EMA crossed BELOW the slow EMA")

@@ -1,0 +1,60 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0
+// © Dskyz
+
+//@version=5
+indicator("DAFE Adaptive Trend Engine [Dskyz]", shorttitle = "DAFE-ATE", overlay = true)
+
+// ─────────────────────────────────────────────
+//  INPUTS
+// ─────────────────────────────────────────────
+int   emaLen     = input.int(50,    "EMA Length",       minval = 1)
+int   atrLen     = input.int(14,    "ATR Length",       minval = 1)
+float atrMult    = input.float(2.0, "ATR Multiplier",   minval = 0.1, step = 0.1)
+bool  showLabels = input.bool(true, "Show Signal Labels")
+
+// ─────────────────────────────────────────────
+//  CORE CALCULATIONS
+// ─────────────────────────────────────────────
+float ema        = ta.ema(close, emaLen)
+float atr        = ta.atr(atrLen)
+float bandwidth  = atr * atrMult
+
+float upperBand  = ema + bandwidth
+float lowerBand  = ema - bandwidth
+
+bool  bullish    = close > ema
+
+// ─────────────────────────────────────────────
+//  TREND COLOUR
+// ─────────────────────────────────────────────
+color trendColor = bullish ? color.new(color.green, 0) : color.new(color.red, 0)
+color fillColor  = bullish ? color.new(color.green, 88) : color.new(color.red, 88)
+
+// ─────────────────────────────────────────────
+//  PLOTS
+// ─────────────────────────────────────────────
+plot(ema,       "EMA",        color = trendColor,              linewidth = 2)
+p_upper = plot(upperBand, "Upper Band", color = color.new(color.gray, 50), linewidth = 1)
+p_lower = plot(lowerBand, "Lower Band", color = color.new(color.gray, 50), linewidth = 1)
+
+fill(p_upper, p_lower, color = fillColor, title = "Channel Fill")
+
+// ─────────────────────────────────────────────
+//  SIGNALS
+// ─────────────────────────────────────────────
+bool buySignal  = ta.crossover(close,  upperBand)
+bool sellSignal = ta.crossunder(close, lowerBand)
+
+if showLabels
+    if buySignal
+        label.new(bar_index, low,  "▲ Buy",  style = label.style_label_up,
+                  color = color.new(color.green, 10), textcolor = color.white, size = size.small)
+    if sellSignal
+        label.new(bar_index, high, "▼ Sell", style = label.style_label_down,
+                  color = color.new(color.red, 10),   textcolor = color.white, size = size.small)
+
+// ─────────────────────────────────────────────
+//  ALERTS
+// ─────────────────────────────────────────────
+alertcondition(buySignal,  "ATE Buy Signal",  "DAFE-ATE: Price crossed ABOVE the upper band")
+alertcondition(sellSignal, "ATE Sell Signal", "DAFE-ATE: Price crossed BELOW the lower band")
