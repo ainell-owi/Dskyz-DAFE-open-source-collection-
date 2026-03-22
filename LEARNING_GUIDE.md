@@ -1,12 +1,12 @@
 # DAFE Collection — Learning Guide
 
-> This guide is the primary educational resource for the Dskyz DAFE Open-Source Collection. It walks you through the philosophy, architecture, and practical use of every script in the library.
+> **Attribution Notice:** The Pine Script indicators and libraries described in this guide were authored by **Dskyz** (also known as **DAFE Trading Systems**). This repository and this guide are maintained by a third party who has **no affiliation** with Dskyz Investments or DAFE Trading Systems. For the original author's work and official resources, visit [dafetradingsystems.com](https://www.dafetradingsystems.com).
 
 ---
 
 ## Table of Contents
 
-1. [Philosophy: Why DAFE Exists](#1-philosophy-why-dafe-exists)
+1. [Philosophy: As Stated by the Original Author](#1-philosophy-as-stated-by-the-original-author)
 2. [The Modular Architecture](#2-the-modular-architecture)
 3. [Shared Libraries (Start Here)](#3-shared-libraries-start-here)
 4. [RSI: Evolved — Momentum Intelligence](#4-rsi-evolved--momentum-intelligence)
@@ -19,11 +19,13 @@
 
 ---
 
-## 1. Philosophy: Why DAFE Exists
+## 1. Philosophy: As Stated by the Original Author
+
+The following philosophy is drawn directly from the documentation that Dskyz (DAFE Trading Systems) published alongside the scripts. This section summarizes those stated principles — it does not represent the views of the person maintaining this collection.
 
 Most retail indicators are built on a single assumption: that one formula fits all markets, all timeframes, and all traders. Bollinger Bands use a 20-period SMA and a 2x standard-deviation envelope — the same values in every chart. RSI defaults to 14 periods and static 70/30 levels — unchanged since Welles Wilder described them in 1978.
 
-DAFE (Dynamic Adaptive Framework Engine) was built on the opposite assumption: **markets are dynamic, multi-dimensional systems, and analytical tools should be too.**
+According to the original author, DAFE (Dynamic Adaptive Framework Engine) was built on the opposite assumption: **markets are dynamic, multi-dimensional systems, and analytical tools should be too.**
 
 Every script in this collection is designed to be:
 
@@ -366,4 +368,4 @@ If you want to read, modify, or learn from the scripts, these are the key Pine S
 
 *"The hard part is not making the decision to buy or sell, but having the patience and discipline to wait for the right setup." — Mark Weinstein*
 
-*Dskyz (DAFE Trading Systems) — Taking you to school.*
+*Scripts authored by Dskyz (DAFE Trading Systems) — [dafetradingsystems.com](https://www.dafetradingsystems.com). This guide is maintained by a third party with no affiliation to the original author.*

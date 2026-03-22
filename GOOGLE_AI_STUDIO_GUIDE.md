@@ -1,6 +1,8 @@
 # Using This Repository with Google AI Studio
 
-> This guide explains how to use the DAFE Open-Source Collection repository as a knowledge base for Google AI Studio — enabling you to build an AI assistant that understands your trading tools, can answer questions about them, and can help you develop new strategies.
+> **Attribution Notice:** The Pine Script indicators and libraries documented here were authored by **Dskyz** (DAFE Trading Systems). This repository and guide are maintained by a third party with no affiliation to Dskyz Investments or DAFE Trading Systems. Official website: [dafetradingsystems.com](https://www.dafetradingsystems.com)
+
+> This guide explains how to use the DAFE Open-Source Collection repository as a knowledge base for Google AI Studio — enabling you to build an AI assistant that understands the collected trading tools, can answer questions about them, and can help you develop new strategies.
 
 ---
 
@@ -369,4 +371,4 @@ A fine-tuned model created in Google AI Studio is private to your account by def
 
 ---
 
-*Dskyz (DAFE Trading Systems) — Trade with Anticipation. Trade with Strength.*
+*Scripts authored by Dskyz (DAFE Trading Systems) — [dafetradingsystems.com](https://www.dafetradingsystems.com). This guide is maintained by a third party with no affiliation to the original author.*

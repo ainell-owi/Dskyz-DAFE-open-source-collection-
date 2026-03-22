@@ -1,7 +1,8 @@
 # Dskyz DAFE — Open-Source Collection
 
-> **Trade with Anticipation. Trade with Strength.**
-> A professional-grade library of Pine Script indicators, libraries, and analytical frameworks built by Dskyz (DAFE Trading Systems).
+> **Attribution Notice**
+> The Pine Script indicators and libraries in this collection were authored by **Dskyz** (also known as **DAFE Trading Systems**). This repository is maintained by a third party who has **no affiliation** with Dskyz Investments or DAFE Trading Systems. All intellectual property belongs to the original author.
+> Official website: [dafetradingsystems.com](https://www.dafetradingsystems.com)
 
 ---
 
@@ -18,7 +19,9 @@
 
 ## What Is This Collection?
 
-The DAFE (Dynamic Adaptive Framework Engine) collection is a suite of advanced TradingView Pine Script indicators and shared libraries. Each script is built around a core philosophy: markets are dynamic, multi-dimensional systems, and your tools should be too.
+The DAFE (Dynamic Adaptive Framework Engine) collection is a suite of advanced TradingView Pine Script indicators and shared libraries authored by **Dskyz** (DAFE Trading Systems). This repository is a third-party collection of those publicly released scripts and is not affiliated with or endorsed by the original author.
+
+Each script is built around a core philosophy stated by the original author: markets are dynamic, multi-dimensional systems, and your tools should be too.
 
 Rather than offering single-purpose indicators, every piece in this collection is a **modular research environment** — a laboratory where you can swap algorithms, compare outputs, and build a toolkit perfectly calibrated to your market.
 
@@ -110,5 +113,5 @@ This repository's documentation is structured so it can be used directly as a kn
 
 ---
 
-*Dskyz (DAFE Trading Systems) — Taking you to school.*
+*Scripts authored by Dskyz (DAFE Trading Systems) — [dafetradingsystems.com](https://www.dafetradingsystems.com). This collection is maintained by a third party with no affiliation to the original author.*
 

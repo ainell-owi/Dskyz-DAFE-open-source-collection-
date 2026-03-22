@@ -1,5 +1,7 @@
 # Repository Organization Guide
 
+> **Attribution Notice:** The Pine Script indicators and libraries referenced in this guide were authored by **Dskyz** (DAFE Trading Systems). This repository and guide are maintained by a third party with no affiliation to Dskyz Investments or DAFE Trading Systems. Official website: [dafetradingsystems.com](https://www.dafetradingsystems.com)
+
 > Recommendations for structuring, naming, and growing the DAFE Open-Source Collection as it expands.
 
 ---
@@ -267,4 +269,4 @@ These are known filesystem/naming issues in the repository as of the current sta
 
 ---
 
-*Dskyz (DAFE Trading Systems) — Trade with Anticipation. Trade with Strength.*
+*Scripts authored by Dskyz (DAFE Trading Systems) — [dafetradingsystems.com](https://www.dafetradingsystems.com). This guide is maintained by a third party with no affiliation to the original author.*
