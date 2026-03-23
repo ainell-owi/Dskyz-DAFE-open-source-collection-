@@ -1,8 +1,8 @@
-# Copilot Instructions — Dskyz DAFE Open-Source Collection
+# Copilot Instructions — DAFE Open-Source Collection
 
 ## Repository Overview
 
-This is a **PineScript trading-indicator ecosystem** published by Dskyz (ainell-owi). It contains institutional-grade TradingView indicators and libraries: manifold-geometry engines, reinforcement-learning world models, DSP filters, 55+ moving averages, 30+ RSI engines, 40+ volatility algorithms, and multi-timeframe order-flow integration.
+This is a **PineScript trading-indicator ecosystem** maintained by ainell-owi. It contains institutional-grade TradingView indicators and libraries: manifold-geometry engines, reinforcement-learning world models, DSP filters, 55+ moving averages, 30+ RSI engines, 40+ volatility algorithms, and multi-timeframe order-flow integration.
 
 There is **no build system, test runner, or CI pipeline**. PineScript is compiled and executed exclusively inside the TradingView platform. There are no `npm`, `pip`, `make`, or shell scripts to run. Do not attempt to install dependencies or build the code locally.
 
