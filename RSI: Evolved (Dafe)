@@ -1,0 +1,320 @@
+//@version=5
+indicator("RSI: Evolved [DAFE]", shorttitle="RSI:E", overlay=false, max_labels_count=500, max_lines_count=500, max_boxes_count=500)
+// ║                         ⚡ RSI: EVOLVED BY DAFE ⚡                                   ║
+// ║                    ═══════════════════════════════════════                            ║
+// ║                                                                                       ║
+// ║                     「  30+ RSI ENGINES • 15+ SMOOTHERS  」                            ║
+// ║                     「  SPECTRAL ANALYSIS • DIVERGENCE  」                             ║
+// ║                     「  QUANTUM ZONES • MULTI-TIMEFRAME  」                            ║
+// ║                                                                                       ║
+// ║                         DAFE Trading Systems - Dskyz                                  ║
+// ║                                                                                       ║
+// ╚═══════════════════════════════════════════════════════════════════════════════════════╝
+// ℹ️ TOOLTIP DEFINITIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+var string TT_ENGINE = "🧠 MOMENTUM ENGINE SELECTION\n\nSelects the mathematical core driving the oscillator:\n\n• CLASSIC: Time-tested calculations (Wilder, SMA, EMA).\n• EXOTIC: Adaptive math (Laguerre, Vidya) that speeds up/slows down based on volatility.\n• VOLUME: Weights price movement by Volume or Money Flow.\n• DAFE PROPRIETARY: Physics-based engines (Quantum, Spectral, Kinetic) exclusive to this system."
+var string TT_SMOOTH = "🌊 SIGNAL SMOOTHING\n\nApplies a post-processing filter to the RSI line to reduce noise without significant lag.\n\n• SuperSmoother/Gaussian: Best for removing high-frequency noise while keeping trend definition.\n• JMA/Jurik: Best for low-lag responsiveness."
+var string TT_FILTER = "🔬 REGIME FILTER MODULE\n\nIntelligent pre-filtering of price data before RSI calculation:\n\n• Volatility: Dampens signals during high volatility to prevent fake-outs.\n• Trend: Aligns RSI bias with the longer-term trend.\n• Composite: Blends all filters for maximum signal robustness."
+var string TT_SIGNAL = "📡 SIGNAL LINE\n\nA moving average of the RSI itself. Crossovers between the RSI and Signal Line often precede price reversals and provide safer entry/exit points than OB/OS levels."
+var string TT_BANDS  = "📊 DYNAMIC VOLATILITY BANDS\n\nWraps the RSI in Bollinger or Keltner bands.\n\n• SQUEEZE: When RSI bands contract, a violent move is imminent.\n• BREAKOUT: RSI piercing the bands indicates a statistical extreme (2+ Sigma)."
+var string TT_DIV    = "🔄 DIVERGENCE ENGINE\n\nDetects disconnects between Price and Momentum.\n\n• Regular: Reversal signal (Price Lower Low, RSI Higher Low).\n• Hidden: Trend Continuation signal (Price Higher Low, RSI Lower Low)."
+var string TT_LEVELS = "📐 DYNAMIC ZONES\n\nStandard 70/30 levels fail in strong trends. Dynamic levels breathe with volatility.\n\n• High Volatility: Levels widen (e.g., 85/15) to keep you in the trade.\n• Low Volatility: Levels tighten (e.g., 60/40) to catch smaller range reversals."
+var string TT_WAVE   = "🔮 QUANTUM HORIZON\n\nVisualizes the 'History of Momentum' directly on the main chart.\n\n• Displays the RSI wave history as a floating overlay.\n• Allows you to see momentum structure without looking down at the oscillator pane."
+// ═══════════════════════════════════════════════════════════════════════════════
+// INPUT GROUPS 
+// ═══════════════════════════════════════════════════════════════════════════════
+string GRP_ENGINE   = "══════════ ⚡ RSI ENGINE ⚡ ══════════"
+string GRP_SMOOTH   = "══════════ 🌊 SMOOTHER ══════════"
+string GRP_FILTER   = "══════════ 🔬 FILTER MODULE ══════════"
+string GRP_SIGNAL   = "══════════ 📡 SIGNAL LINE ══════════"
+string GRP_BANDS    = "══════════ 📊 RSI BANDS ══════════"
+string GRP_DIVERG   = "══════════ 🔄 DIVERGENCE ══════════"
+string GRP_MTF      = "══════════ 🌐 MULTI-TIMEFRAME ══════════"
+string GRP_LEVELS   = "══════════ 📐 DYNAMIC LEVELS ══════════"
+string GRP_VISUAL   = "══════════ 🎨 VISUALS ══════════"
+string GRP_DASH     = "══════════ 📱 DASHBOARD ══════════"
+string GRP_ALERT    = "══════════ 🔔 ALERTS ══════════"
+string GRP_HORIZON  = "══════════ 🔮 QUANTUM HORIZON ══════════"
+// ═══════════════════════════════════════════════════════════════════════════════
+// RSI ENGINE SELECTION
+// ═══════════════════════════════════════════════════════════════════════════════
+string RSI_CLASSIC  = "──── CLASSIC ────"
+string RSI_WILDER   = "Wilder's Original"
+string RSI_CUTLER   = "Cutler's (SMA)"
+string RSI_EMA      = "Exponential (EMA)"
+string RSI_DEMA     = "Double EMA (DEMA)"
+string RSI_TEMA     = "Triple EMA (TEMA)"
+string RSI_WMA      = "Weighted (WMA)"
+string RSI_HULL     = "Hull (HMA)"
+string RSI_ZLEMA    = "Zero-Lag EMA"
+string RSI_EXOTIC   = "──── EXOTIC ────"
+string RSI_LAGUERRE = "Laguerre Time-Warp"
+string RSI_CONNORS  = "Connors RSI"
+string RSI_STOCH    = "Stochastic RSI"
+string RSI_RMI      = "Relative Momentum (RMI)"
+string RSI_DYNAMIC  = "Dynamic Period RSI"
+string RSI_VIDYA    = "VIDYA Adaptive"
+string RSI_KAMA     = "KAMA Adaptive"
+string RSI_FISHER   = "Fisher Transform RSI"
+string RSI_INVERSE  = "Inverse Fisher RSI"
+string RSI_COPPOCK  = "Coppock RSI"
+string RSI_VOLUME   = "──── VOLUME-BASED ────"
+string RSI_VRSI     = "Volume-Weighted RSI"
+string RSI_MFI      = "Money Flow RSI"
+string RSI_VWRSI    = "VWAP-Weighted RSI"
+string RSI_DAFE     = "──── DAFE PROPRIETARY ────"
+string RSI_QUANTUM  = "DAFE Quantum Fusion"
+string RSI_SPECTRAL = "DAFE Spectral"
+string RSI_KINETIC  = "DAFE Kinetic Energy"
+string RSI_ENTROPY  = "DAFE Entropy Flow"
+string RSI_NEURAL   = "DAFE Neural Blend"
+string RSI_HARMONIC = "DAFE Harmonic"
+string RSI_FRACTAL  = "DAFE Fractal Dimension"
+string RSI_ULTIMATE = "DAFE Ultimate RSI"
+i_rsi_type = input.string(RSI_QUANTUM, "RSI Calculation Engine", options=[
+     RSI_CLASSIC, RSI_WILDER, RSI_CUTLER, RSI_EMA, RSI_DEMA, RSI_TEMA, RSI_WMA, RSI_HULL, RSI_ZLEMA,
+     RSI_EXOTIC, RSI_LAGUERRE, RSI_CONNORS, RSI_STOCH, RSI_RMI, RSI_DYNAMIC, RSI_VIDYA, RSI_KAMA, RSI_FISHER, RSI_INVERSE, RSI_COPPOCK,
+     RSI_VOLUME, RSI_VRSI, RSI_MFI, RSI_VWRSI,
+     RSI_DAFE, RSI_QUANTUM, RSI_SPECTRAL, RSI_KINETIC, RSI_ENTROPY, RSI_NEURAL, RSI_HARMONIC, RSI_FRACTAL, RSI_ULTIMATE
+     ], group=GRP_ENGINE, tooltip=TT_ENGINE)
+i_rsi_len = input.int(14, "RSI Length", minval=2, maxval=200, group=GRP_ENGINE)
+i_rsi_src = input.source(close, "Source", group=GRP_ENGINE)
+// ═══════════════════════════════════════════════════════════════════════════════
+// SMOOTHER SELECTION
+// ═══════════════════════════════════════════════════════════════════════════════
+string SM_NONE      = "None (Raw)"
+string SM_SMA       = "SMA"
+string SM_EMA       = "EMA"
+string SM_WMA       = "WMA"
+string SM_HMA       = "Hull MA"
+string SM_DEMA      = "DEMA"
+string SM_TEMA      = "TEMA"
+string SM_ZLEMA     = "Zero-Lag EMA"
+string SM_ALMA      = "ALMA"
+string SM_T3        = "T3 Tilson"
+string SM_VIDYA     = "VIDYA"
+string SM_KAMA      = "KAMA"
+string SM_SUPER     = "Ehlers SuperSmoother"
+string SM_BUTTER    = "Butterworth"
+string SM_GAUSS     = "Gaussian"
+string SM_SINE      = "Sine-Weighted"
+string SM_HAMMING   = "Hamming Window"
+string SM_TRIANGULAR= "Triangular"
+string SM_JURIK     = "Jurik-Style"
+i_smooth_type = input.string(SM_SUPER, "Smoother Type", options=[
+     SM_NONE, SM_SMA, SM_EMA, SM_WMA, SM_HMA, SM_DEMA, SM_TEMA, SM_ZLEMA, SM_ALMA, SM_T3,
+     SM_VIDYA, SM_KAMA, SM_SUPER, SM_BUTTER, SM_GAUSS, SM_SINE, SM_HAMMING, SM_TRIANGULAR, SM_JURIK
+     ], group=GRP_SMOOTH, tooltip=TT_SMOOTH)
+i_smooth_len = input.int(5, "Smooth Length", minval=1, maxval=50, group=GRP_SMOOTH)
+i_smooth_power = input.float(2.0, "Smooth Power/Factor", minval=0.1, maxval=5.0, step=0.1, group=GRP_SMOOTH)
+// ═══════════════════════════════════════════════════════════════════════════════
+// FILTER MODULE
+// ═══════════════════════════════════════════════════════════════════════════════
+i_filter_enable = input.bool(true, "Enable Filter Module", group=GRP_FILTER, tooltip=TT_FILTER)
+string FLT_NONE     = "None"
+string FLT_TREND    = "Trend Filter"
+string FLT_VOL      = "Volatility Filter"
+string FLT_MOM      = "Momentum Filter"
+string FLT_RANGE    = "Range Filter"
+string FLT_COMPOSITE= "Composite Filter"
+i_filter_type = input.string(FLT_COMPOSITE, "Filter Type", options=[
+     FLT_NONE, FLT_TREND, FLT_VOL, FLT_MOM, FLT_RANGE, FLT_COMPOSITE
+     ], group=GRP_FILTER)
+i_filter_str = input.float(1.0, "Filter Strength", minval=0.1, maxval=3.0, step=0.1, group=GRP_FILTER)
+// ═══════════════════════════════════════════════════════════════════════════════
+// INPUTS
+// ═══════════════════════════════════════════════════════════════════════════════
+i_signal_enable = input.bool(true, "Show Signal Line", group=GRP_SIGNAL, tooltip=TT_SIGNAL)
+i_signal_len = input.int(9, "Signal Length", minval=1, maxval=50, group=GRP_SIGNAL)
+i_signal_type = input.string(SM_EMA, "Signal Type", options=[
+     SM_SMA, SM_EMA, SM_WMA, SM_HMA, SM_DEMA, SM_TEMA
+     ], group=GRP_SIGNAL)
+i_bands_enable = input.bool(true, "Show RSI Bands", group=GRP_BANDS, tooltip=TT_BANDS)
+string BAND_BB      = "Bollinger Bands"
+string BAND_KC      = "Keltner Channels"
+string BAND_ENV     = "Envelope"
+string BAND_STDEV   = "Standard Deviation"
+i_bands_type = input.string(BAND_BB, "Band Type", options=[BAND_BB, BAND_KC, BAND_ENV, BAND_STDEV], group=GRP_BANDS)
+i_bands_len = input.int(20, "Band Length", minval=5, maxval=100, group=GRP_BANDS)
+i_bands_mult = input.float(2.0, "Band Multiplier", minval=0.5, maxval=5.0, step=0.1, group=GRP_BANDS)
+i_div_enable = input.bool(true, "Enable Divergence Detection", group=GRP_DIVERG, tooltip=TT_DIV)
+i_div_regular = input.bool(true, "Show Regular Divergences", group=GRP_DIVERG)
+i_div_hidden = input.bool(true, "Show Hidden Divergences", group=GRP_DIVERG)
+i_div_lookback = input.int(5, "Pivot Lookback", minval=2, maxval=20, group=GRP_DIVERG)
+i_div_range = input.int(60, "Divergence Range", minval=10, maxval=200, group=GRP_DIVERG)
+i_mtf_enable = input.bool(true, "Enable MTF Analysis", group=GRP_MTF)
+i_mtf_tf1 = input.timeframe("60", "Timeframe 1", group=GRP_MTF)
+i_mtf_tf2 = input.timeframe("240", "Timeframe 2", group=GRP_MTF)
+i_mtf_tf3 = input.timeframe("D", "Timeframe 3", group=GRP_MTF)
+i_horizon_enable = input.bool(true, "Enable Quantum Horizon Display", group=GRP_HORIZON, tooltip=TT_WAVE)
+i_horizon_depth = input.int(50, "Wave History Depth", minval=20, maxval=100, group=GRP_HORIZON)
+i_horizon_spacing = input.int(-60, "Horizon Spacing", minval=-150, maxval=0, group=GRP_HORIZON)
+i_horizon_start_offset = input.int(60, "Starting Position Offset", minval=0, maxval=150, group=GRP_HORIZON)
+string HORIZON_RSI = "RSI"
+string HORIZON_MFI = "MFI"
+string HORIZON_STOCH = "Stochastic RSI"
+i_horizon_wave_type = input.string(HORIZON_RSI, "Wave Calculation Type", options=[HORIZON_RSI, HORIZON_MFI, HORIZON_STOCH], group=GRP_HORIZON)
+i_horizon_wave_color = input.color(#9D00FF, "Primary Wave Color", group=GRP_HORIZON)
+i_horizon_signal_color = input.color(#FFD700, "Signal Flow Color", group=GRP_HORIZON)
+string GRP_TEMPORAL = "══════════ 🌊 TEMPORAL WAVE ══════════"
+i_temporal_wave_enable = input.bool(true, "Enable Temporal Wave Display", group=GRP_TEMPORAL, 
+     tooltip="Show multi-timeframe RSI wave visualization overlay on main chart")
+string TEMPORAL_LOCATION_BOTTOM = "Bottom of Chart"
+string TEMPORAL_LOCATION_TOP = "Top of Chart"
+i_temporal_wave_location = input.string(TEMPORAL_LOCATION_BOTTOM, "Display Location", 
+     options=[TEMPORAL_LOCATION_BOTTOM, TEMPORAL_LOCATION_TOP], group=GRP_TEMPORAL,
+     tooltip="Choose whether to display waves at the top or bottom of the chart")
+string TEMPORAL_RSI = "RSI"
+string TEMPORAL_MFI = "MFI"
+string TEMPORAL_STOCH = "Stochastic RSI"
+i_temporal_wave_type = input.string(TEMPORAL_RSI, "Oscillator Type", 
+     options=[TEMPORAL_RSI, TEMPORAL_MFI, TEMPORAL_STOCH], group=GRP_TEMPORAL)
+i_temporal_wave_1_show = input.bool(true, "Show Horizon 1", group=GRP_TEMPORAL, inline="h1")
+i_temporal_wave_1_period = input.int(14, "Period", group=GRP_TEMPORAL, inline="h1", minval=2, maxval=100)
+i_temporal_wave_1_signal = input.int(14, "Signal", group=GRP_TEMPORAL, inline="h1", minval=2, maxval=100)
+i_temporal_wave_2_show = input.bool(true, "Show Horizon 2", group=GRP_TEMPORAL, inline="h2")
+i_temporal_wave_2_period = input.int(14, "Period", group=GRP_TEMPORAL, inline="h2", minval=2, maxval=100)
+i_temporal_wave_2_signal = input.int(14, "Signal", group=GRP_TEMPORAL, inline="h2", minval=2, maxval=100)
+i_temporal_wave_3_show = input.bool(true, "Show Horizon 3", group=GRP_TEMPORAL, inline="h3")
+i_temporal_wave_3_period = input.int(14, "Period", group=GRP_TEMPORAL, inline="h3", minval=2, maxval=100)
+i_temporal_wave_3_signal = input.int(14, "Signal", group=GRP_TEMPORAL, inline="h3", minval=2, maxval=100)
+i_levels_dynamic = input.bool(true, "Use Dynamic Levels", group=GRP_LEVELS, tooltip=TT_LEVELS)
+i_ob_level = input.int(70, "Overbought Level", minval=50, maxval=95, group=GRP_LEVELS)
+i_os_level = input.int(30, "Oversold Level", minval=5, maxval=50, group=GRP_LEVELS)
+i_extreme_ob = input.int(80, "Extreme Overbought", minval=60, maxval=99, group=GRP_LEVELS)
+i_extreme_os = input.int(20, "Extreme Oversold", minval=1, maxval=40, group=GRP_LEVELS)
+string VIS_QUANTUM  = "Quantum Gradient"
+string VIS_SPECTRAL = "Spectral Flow"
+string VIS_PLASMA   = "Plasma Heat"
+string VIS_NEON     = "Neon Pulse"
+string VIS_CLASSIC  = "Classic Style"
+i_visual_theme = input.string(VIS_QUANTUM, "Visual Theme", options=[
+     VIS_QUANTUM, VIS_SPECTRAL, VIS_PLASMA, VIS_NEON, VIS_CLASSIC
+     ], group=GRP_VISUAL)
+i_glow_enable = input.bool(true, "Enable Glow Effect", group=GRP_VISUAL)
+i_fill_enable = input.bool(true, "Enable Zone Fills", group=GRP_VISUAL)
+i_hist_enable = input.bool(true, "Show Momentum Histogram", group=GRP_VISUAL)
+i_candle_color = input.bool(false, "Color Price Candles", group=GRP_VISUAL)
+i_bg_zones = input.bool(true, "Show Background Zones", group=GRP_VISUAL)
+i_dash_enable = input.bool(true, "Show Dashboard", group=GRP_DASH)
+string DASH_FULL    = "Full Dashboard"
+string DASH_COMPACT = "Compact"
+string DASH_MINI    = "Mini"
+i_dash_size = input.string(DASH_FULL, "Dashboard Size", options=[DASH_FULL, DASH_COMPACT, DASH_MINI], group=GRP_DASH)
+i_dash_pos = input.string("Top Right", "Dashboard Position", options=["Top Right", "Top Left", "Bottom Right", "Bottom Left"], group=GRP_DASH)
+string DASH_MODE_OVERLAY = "Main Chart Overlay"
+string DASH_MODE_PANEL   = "Indicator Panel"
+i_dash_display_mode = input.string(DASH_MODE_PANEL, "Dashboard Location", 
+     options=[DASH_MODE_OVERLAY, DASH_MODE_PANEL], group=GRP_DASH, 
+     tooltip="Select whether dashboard appears on main price chart or within indicator panel")
+// ═══════════════════════════════════════════════════════════════════════════════
+// COLOR PALETTE
+// ═══════════════════════════════════════════════════════════════════════════════
+color DAFE_CYAN      = #00FFFF
+color DAFE_MAGENTA   = #FF00FF
+color DAFE_GOLD      = #FFD700
+color DAFE_NEON_BLUE = #00BFFF
+color DAFE_PURPLE    = #9D00FF
+color DAFE_GREEN     = #00FF88
+color DAFE_RED       = #FF0055
+color DAFE_ORANGE    = #FF6600
+color DAFE_PINK      = #FF69B4
+color DAFE_ELECTRIC  = #7DF9FF
+color DAFE_PLASMA    = #FF1493
+color DAFE_VOID      = #0D0D1A
+color DAFE_PANEL     = #0A0A14
+color DAFE_BORDER    = #1E1E32
+// ═══════════════════════════════════════════════════════════════════════════════
+// HELPER FUNCTIONS 
+// ═══════════════════════════════════════════════════════════════════════════════
+f_tanh(x) =>
+    exp2x = math.exp(2 * x)
+    (exp2x - 1) / (exp2x + 1)
+f_up_down(src) =>
+    change = src - src[1]
+    up = math.max(change, 0)
+    down = math.abs(math.min(change, 0))
+    [up, down]
+f_rsi_basic(src, len, ma_type) =>
+    [up, down] = f_up_down(src)
+    float avg_up = 0.0
+    float avg_down = 0.0
+    if ma_type == RSI_WILDER or ma_type == "RMA"
+        avg_up := ta.rma(up, len)
+        avg_down := ta.rma(down, len)
+    else if ma_type == RSI_CUTLER or ma_type == "SMA"
+        avg_up := ta.sma(up, len)
+        avg_down := ta.sma(down, len)
+    else if ma_type == RSI_EMA or ma_type == "EMA"
+        avg_up := ta.ema(up, len)
+        avg_down := ta.ema(down, len)
+    else if ma_type == RSI_WMA or ma_type == "WMA"
+        avg_up := ta.wma(up, len)
+        avg_down := ta.wma(down, len)
+    else
+        avg_up := ta.rma(up, len)
+        avg_down := ta.rma(down, len)
+    rs = avg_down == 0 ? 100 : avg_up / avg_down
+    100 - (100 / (1 + rs))
+f_dema(src, len) =>
+    ema1 = ta.ema(src, len)
+    ema2 = ta.ema(ema1, len)
+    2 * ema1 - ema2
+f_tema(src, len) =>
+    ema1 = ta.ema(src, len)
+    ema2 = ta.ema(ema1, len)
+    ema3 = ta.ema(ema2, len)
+    3 * ema1 - 3 * ema2 + ema3
+f_hma(src, len) =>
+    ta.wma(2 * ta.wma(src, len/2) - ta.wma(src, len), math.round(math.sqrt(len)))
+f_zlema(src, len) =>
+    lag = math.floor((len - 1) / 2)
+    src_adj = src + (src - src[lag])
+    ta.ema(src_adj, len)
+f_vidya(src, len) =>
+    alpha = 2.0 / (len + 1)
+    mom_up = ta.mom(src, 1) > 0 ? ta.mom(src, 1) : 0.0
+    mom_down = ta.mom(src, 1) < 0 ? -ta.mom(src, 1) : 0.0
+    sum_up = math.sum(mom_up, 9)
+    sum_down = math.sum(mom_down, 9)
+    cmo = (sum_up - sum_down) / (sum_up + sum_down + 0.0001)
+    var float vidya = na
+    vidya := alpha * math.abs(cmo) * src + (1 - alpha * math.abs(cmo)) * nz(vidya[1], src)
+    vidya
+f_kama(src, len) =>
+    change_sum = math.abs(src - src[len])
+    volatility = math.sum(math.abs(src - src[1]), len)
+    er = volatility != 0 ? change_sum / volatility : 0
+    fast = 2.0 / (2 + 1)
+    slow = 2.0 / (30 + 1)
+    sc = math.pow(er * (fast - slow) + slow, 2)
+    var float kama = na
+    kama := sc * src + (1 - sc) * nz(kama[1], src)
+    kama
+f_supersmoother(src, len) =>
+    a1 = math.exp(-1.414 * math.pi / len)
+    b1 = 2 * a1 * math.cos(1.414 * math.pi / len)
+    c2 = b1
+    c3 = -a1 * a1
+    c1 = 1 - c2 - c3
+    var float ss = na
+    ss := c1 * (src + nz(src[1])) / 2 + c2 * nz(ss[1]) + c3 * nz(ss[2])
+    ss
+f_butterworth(src, len) =>
+    a1 = math.exp(-1.414 * math.pi / len)
+    b1 = 2 * a1 * math.cos(1.414 * math.pi / len)
+    c2 = b1
+    c3 = -a1 * a1
+    c1 = (1 - b1 + a1 * a1) / 4
+    var float bw = na
+    bw := c1 * (src + 2 * nz(src[1]) + nz(src[2])) + c2 * nz(bw[1]) + c3 * nz(bw[2])
+    bw
+f_gaussian(src, len, poles) =>
+    beta = (1 - math.cos(2 * math.pi / len)) / (math.pow(2, 1.0/poles) - 1)
+    alpha = -beta + math.sqrt(beta * beta + 2 * beta)
+    var float gauss = na
+    gauss := alpha * src + (1 - alpha) * nz(gauss[1])
+    gauss
+f_t3(src, len, factor) =>
+    e1 = ta.ema(src, len)
+    e2 = ta

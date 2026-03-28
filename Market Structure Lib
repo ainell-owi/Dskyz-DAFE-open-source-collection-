@@ -1,0 +1,377 @@
+//@version=6
+library("MarketStructureLib", overlay=true)
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+//    ███╗   ███╗ █████╗ ██████╗ ██╗  ██╗███████╗████████╗
+//    ████╗ ████║██╔══██╗██╔══██╗██║ ██╔╝██╔════╝╚══██╔══╝
+//    ██╔████╔██║███████║██████╔╝█████╔╝ █████╗     ██║
+//    ██║╚██╔╝██║██╔══██║██╔══██╗██╔═██╗ ██╔══╝     ██║
+//    ██║ ╚═╝ ██║██║  ██║██║  ██║██║  ██╗███████╗   ██║
+//    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝
+//
+//    MARKET STRUCTURE LIBRARY — MULTI-TIMEFRAME EDITION
+//
+// ═══════════════════════════════════════════════════════════════════════════════
+float EPS = 1e-10
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🧮 EXPORTED TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+//@type Unified market context blending Footprint (if available) and OHLCV models
+export type MarketContext
+    float unified_delta     = 0.0
+    float unified_buy       = 0.0
+    float unified_sell      = 0.0
+    float unified_agg       = 0.5
+    float spread_proxy      = 0.0
+    float vol_quality       = 0.5
+    float absorption        = 0.0
+    float fp_poc_shift      = 0.0
+    bool  fp_active         = false
+//@type Liquidity snapshot measured at a specific structural level
+export type LevelLiquidity
+    float  delta_at_level    = 0.0
+    float  absorption_rate   = 0.0
+    float  spread_quality    = 0.5
+    float  volume_quality    = 0.5
+    float  aggressor_ratio   = 0.5
+    float  hold_probability  = 0.5
+    float  break_probability = 0.5
+    string action_type       = "neutral"
+    int    sample_count      = 0
+//@type Single structural price level with metadata and liquidity context
+export type StructureLevel
+    float          price          = na
+    string         level_type     = ""
+    string         timeframe      = ""
+    float          strength       = 0.5
+    int            age            = 0
+    int            touch_count    = 0
+    int            last_touch_bar = 0
+    float          delta_at_level = 0.0
+    bool           is_broken      = false
+    LevelLiquidity liquidity      = na
+//@type Dynamic trendline corridor connecting successive pivot endpoints
+export type SiegeCorridor
+    float  anchor_price_a = na
+    int    anchor_bar_a   = na
+    float  anchor_price_b = na
+    int    anchor_bar_b   = na
+    int    direction      = 0
+    float  slope          = 0.0
+    int    hit_count      = 0
+    float  decay          = 1.0
+    float  pressure       = 0.0
+    float  delta_align    = 0.0
+    bool   third_push     = false
+    float  break_prob     = 0.0
+    float  fail_prob      = 0.0
+    string timeframe      = ""
+    bool   is_active      = false
+//@type Complete structural snapshot for a single timeframe
+export type TimeframeStructure
+    string                tf              = ""
+    float                 poc             = na
+    float                 vah             = na
+    float                 val_            = na
+    array<StructureLevel> levels          = na
+    SiegeCorridor         res_corridor    = na
+    SiegeCorridor         sup_corridor    = na
+    float                 bias            = 0.0
+    int                   last_update_bar = 0
+    bool                  is_valid        = false
+//@type Container holding up to 4 timeframe structures
+export type MultiTFStructure
+    TimeframeStructure tf1 = na
+    TimeframeStructure tf2 = na
+    TimeframeStructure tf3 = na
+    TimeframeStructure tf4 = na
+    int                active_count = 0
+//@type Zone where multiple timeframe levels cluster together
+export type ConfluenceZone
+    float  price             = na
+    float  width             = 0.0
+    int    level_count       = 0
+    float  combined_strength = 0.0
+    int    contributing_tfs  = 0
+    string dominant_type     = ""
+    float  bias              = 0.0
+    float  hold_probability  = 0.5
+    float  liquidity_quality = 0.5
+//@type Quick summary state for decision-making
+export type StructureState
+    float nearest_support      = na
+    float nearest_resistance   = na
+    float support_hold_prob    = 0.5
+    float resistance_hold_prob = 0.5
+    int   confluence_count     = 0
+    float net_bias             = 0.0
+    bool  inside_value         = false
+    bool  at_siege             = false
+    float structure_quality    = 0.0
+//@type Real-time proximity state for intra-bar alerts
+export type IntrabarState
+    bool   at_poc            = false
+    bool   at_vah            = false
+    bool   at_val            = false
+    bool   at_siege_res      = false
+    bool   at_siege_sup      = false
+    bool   at_confluence     = false
+    string active_level_name = ""
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🔒 INTERNAL HELPERS
+// ═══════════════════════════════════════════════════════════════════════════════
+_clamp(float x, float lo, float hi) => math.max(lo, math.min(hi, x))
+_sgn(float x) => x > 0 ? 1.0 : x < 0 ? -1.0 : 0.0
+_siege_decay(int h) => h == 0 ? 1.0 : h == 1 ? 0.9 : h == 2 ? 0.75 : h == 3 ? 0.5 : 0.1
+_empty_liq() => 
+    LevelLiquidity.new(0.0, 0.0, 0.5, 0.5, 0.5, 0.5, 0.5, "neutral", 0)
+_make_corr(string tf, int dir) => 
+    SiegeCorridor.new(na, na, na, na, dir, 0.0, 0, 1.0, 0.0, 0.0, false, 0.0, 0.0, tf, false)
+_make_tf(string tf) => 
+    TimeframeStructure.new(tf, na, na, na, array.new<StructureLevel>(), _make_corr(tf, 1), _make_corr(tf, -1), 0.0, 0, false)
+_calc_spread_proxy(float h, float l, int lb) =>
+    float hl1 = h > 0 and l > 0 ? math.log(h/l) : 0.0
+    float phl = nz(h[1]) > 0 and nz(l[1]) > 0 ? math.log(h[1]/l[1]) : 0.0
+    float beta = nz(ta.sma(hl1*hl1 + phl*phl, lb), 0.0) / 2.0
+    float tbh = math.max(h, nz(h[1], h)), float tbl = math.min(l, nz(l[1], l))
+    float gamma = tbh > 0 and tbl > 0 ? math.log(tbh/tbl) : 0.0
+    float gs = nz(ta.sma(gamma*gamma, lb), 0.0)
+    float s2 = math.sqrt(2.0), float dn = 3.0 - 2.0 * s2
+    float a = 0.0
+    if beta > 0
+        a := (s2 - 1.0) * math.sqrt(beta) / dn
+        if gs > beta
+            a := (s2 - 1.0) * (math.sqrt(math.max(gs, 0.0)) - math.sqrt(beta)) / dn
+    math.max(0.0, 2.0 * (math.exp(_clamp(a, -5.0, 5.0)) - 1.0) / (1.0 + math.exp(_clamp(a, -5.0, 5.0))) * 100.0)
+_classify_action(float d, float sp, float vq, float ab, int dir) =>
+    float al = d * dir
+    ab > 0.6 and vq > 0.4 ? "absorbing" : al > 0 and vq > 0.5 and sp < 0.15 ? "defending" : al < 0 and vq > 0.3 ? "attacking" : vq < 0.2 ? "abandoning" : "neutral"
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🌐 MARKET CONTEXT & LIQUIDITY FUSION
+// ═══════════════════════════════════════════════════════════════════════════════
+//@function Builds a unified MarketContext object, gracefully blending real footprint data with OHLCV mathematical approximations.
+//@param o Open
+//@param h High
+//@param l Low
+//@param c Close
+//@param v Volume
+//@param fp Footprint object (can be na)
+//@param avg_vol Rolling average volume (e.g. SMA 20)
+//@param prev_poc_mid Previous bar's footprint POC mid (for shift detection)
+//@param atr_val Current ATR
+//@returns MarketContext object with highly accurate liquidity metrics
+export get_market_context(float o, float h, float l, float c, float v, footprint fp, float avg_vol, float prev_poc_mid, float atr_val) =>
+    MarketContext ctx = MarketContext.new(0.0, 0.0, 0.0, 0.5, 0.0, 0.5, 0.0, 0.0, false)
+    bool fp_ok = not na(fp)
+    ctx.fp_active := fp_ok
+    // OHLCV Fallbacks
+    float rng = h - l
+    float f_buy = 0.0, float f_sell = 0.0, float f_delta = 0.0
+    if rng > 0 and v > 0
+        float bp = (c - l) / rng
+        float bb = c > o ? 1.1 : c < o ? 0.9 : 1.0
+        f_buy := v * bp * bb
+        f_sell := v * (1.0 - bp) * (2.0 - bb)
+        float tot = f_buy + f_sell
+        f_buy := tot > 0 ? f_buy / tot * v : v / 2.0
+        f_sell := tot > 0 ? f_sell / tot * v : v / 2.0
+        f_delta := f_buy - f_sell
+    // Fusion
+    ctx.unified_buy   := fp_ok ? fp.buy_volume() : f_buy
+    ctx.unified_sell  := fp_ok ? fp.sell_volume() : f_sell
+    ctx.unified_delta := fp_ok ? fp.delta() : f_delta
+    float t_vol = ctx.unified_buy + ctx.unified_sell
+    ctx.unified_agg   := t_vol > 0 ? ctx.unified_buy / t_vol : 0.5
+    ctx.spread_proxy := _calc_spread_proxy(h, l, 20)
+    ctx.vol_quality  := avg_vol > 0 ? _clamp(v / avg_vol, 0.0, 3.0) / 3.0 : 0.5
+    // Absorption fusion
+    ctx.absorption := fp_ok ? 
+         ((c > o and ctx.unified_delta < 0) or (c < o and ctx.unified_delta > 0) ? 1.0 :
+         (math.abs(c - o) < rng * 0.3 and v > avg_vol) ? 0.7 : 0.0) :
+         ((c > o and f_delta < 0) or (c < o and f_delta > 0) ? 1.0 : 0.0)        
+    // POC Shift
+    if fp_ok and not na(prev_poc_mid)
+        volume_row pr = fp.poc()
+        float cur_poc = (pr.up_price() + pr.down_price()) / 2.0
+        ctx.fp_poc_shift := (cur_poc - prev_poc_mid) / math.max(atr_val, syminfo.mintick)       
+    ctx
+//@function Calculates liquidity dynamics specifically at a given structural level
+//@param level StructureLevel object
+//@param price Current price
+//@param atr_val Current ATR (used for proximity tolerance)
+//@param ctx MarketContext object generated by get_market_context()
+//@param avg_spread Rolling average spread
+//@returns LevelLiquidity object containing defense/attack probabilities
+export calc_level_liquidity(StructureLevel level, float price, float atr_val, MarketContext ctx, float avg_spread) =>
+    LevelLiquidity liq = _empty_liq()
+    if not na(level.price) and not na(price) and atr_val > 0
+        float dist = math.abs(price - level.price)
+        if dist <= atr_val * 0.5
+            liq.sample_count := level.touch_count + 1
+            liq.delta_at_level := ctx.unified_delta
+            liq.volume_quality := ctx.vol_quality
+            liq.spread_quality := avg_spread > 0 ? _clamp(1.0 - ctx.spread_proxy / (avg_spread * 2.0), 0.0, 1.0) : 0.5
+            liq.absorption_rate := ctx.absorption
+            liq.aggressor_ratio := ctx.unified_agg          
+            int lev_dir = level.level_type == "swing_low" or level.level_type == "val" or level.level_type == "siege_sup" ? 1 : -1
+            liq.action_type := _classify_action(ctx.unified_delta, ctx.spread_proxy, ctx.vol_quality, ctx.absorption, lev_dir)           
+            float hold = 0.5
+            if liq.action_type == "defending"
+                hold += 0.25
+            else if liq.action_type == "absorbing"
+                hold += 0.15
+            else if liq.action_type == "attacking"
+                hold -= 0.20
+            else if liq.action_type == "abandoning"
+                hold -= 0.30               
+            hold += liq.spread_quality * 0.10 + liq.volume_quality * 0.10 + level.strength * 0.10
+            hold -= (1.0 - _clamp(float(level.touch_count) / 5.0, 0.0, 1.0)) * 0.05
+            if level.touch_count >= 3
+                hold -= 0.10                
+            liq.hold_probability := _clamp(hold, 0.05, 0.95)
+            liq.break_probability := 1.0 - liq.hold_probability
+    liq
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🏗 CORE STRUCTURE API
+// ═══════════════════════════════════════════════════════════════════════════════
+//@function Creates an empty unified MultiTFStructure container
+//@returns MultiTFStructure
+export create_structure() =>
+    MultiTFStructure.new(_make_tf(""), _make_tf(""), _make_tf(""), _make_tf(""), 0)
+//@function Extracts a specific timeframe structure from the multi-container
+//@param m MultiTFStructure container
+//@param idx Index (0 to 3)
+//@returns TimeframeStructure
+export get_tfs(MultiTFStructure m, int idx) =>
+    idx == 0 ? m.tf1 : idx == 1 ? m.tf2 : idx == 2 ? m.tf3 : m.tf4
+//@function Calculates Point of Control and Value Area. Automatically uses Footprint data if available, falling back to an OHLCV volume profile approximation.
+//@param ha Array of highs
+//@param la Array of lows
+//@param ca Array of closes
+//@param va Array of volumes
+//@param rows Number of profile rows for fallback calculation
+//@param fp Footprint object (can be na)
+//@returns [poc, vah, val_]
+export calc_unified_poc_va(array<float> ha, array<float> la, array<float> ca, array<float> va, int rows, footprint fp) =>
+    float poc = na, float vah = na, float val_ = na
+    if not na(fp)
+        volume_row vr = fp.vah(), volume_row vlr = fp.val(), volume_row pr = fp.poc()
+        poc := (pr.up_price() + pr.down_price()) / 2.0
+        vah := vr.up_price()
+        val_ := vlr.down_price()
+    else
+        int sz = math.min(array.size(ha), math.min(array.size(la), math.min(array.size(ca), array.size(va))))
+        if sz > 0
+            float ph = array.max(ha), float pl = array.min(la), float pr = ph - pl
+            if pr > 0
+                array<float> prof = array.new_float(rows, 0.0)
+                float rh = pr / rows
+                for i = 0 to sz - 1
+                    int lr = math.max(0, math.min(rows - 1, int(math.floor((array.get(la, i) - pl) / rh))))
+                    int hr = math.max(0, math.min(rows - 1, int(math.floor((array.get(ha, i) - pl) / rh))))
+                    int cr = math.max(0, math.min(rows - 1, int(math.floor((array.get(ca, i) - pl) / rh))))
+                    int sp = hr - lr + 1
+                    float vpr = sp > 0 ? array.get(va, i) / sp : array.get(va, i)
+                    for r = lr to hr
+                        array.set(prof, r, array.get(prof, r) + vpr * (r == cr ? 1.5 : 1.0))
+                float mv = 0.0, int pr_row = 0
+                for r = 0 to rows - 1
+                    if array.get(prof, r) > mv
+                        mv := array.get(prof, r), pr_row := r
+                poc := pl + (pr_row + 0.5) * rh
+                float tv = array.sum(prof), float vt = tv * 0.70, float vv = array.get(prof, pr_row)
+                int vlr = pr_row, int vhr = pr_row
+                while vv < vt and (vlr > 0 or vhr < rows - 1)
+                    float al = vlr > 0 ? array.get(prof, vlr - 1) : 0.0
+                    float ah = vhr < rows - 1 ? array.get(prof, vhr + 1) : 0.0
+                    if ah >= al and vhr < rows - 1
+                        vhr += 1, vv += ah
+                    else if vlr > 0
+                        vlr -= 1, vv += al
+                    else if vhr < rows - 1
+                        vhr += 1, vv += ah
+                    else
+                        break
+                vah := pl + (vhr + 1) * rh
+                val_ := pl + vlr * rh
+    [poc, vah, val_]
+//@function Projects a siege corridor's price at a target bar
+export project_siege_price(SiegeCorridor c, int target_bar) =>
+    if na(c) or not c.is_active or na(c.anchor_price_a) or na(c.anchor_bar_a)
+        float(na)
+    else
+        c.anchor_price_a + c.slope * (target_bar - c.anchor_bar_a)
+//@function Builds a Siege Corridor (dynamic trendline) and scans chart history for touches
+export build_corridor(float pa, int ba, float pb, int bb, int dir, string tf, float atr_v, MarketContext ctx) =>
+    SiegeCorridor c = SiegeCorridor.new(pa, ba, pb, bb, dir, 0.0, 0, 1.0, 0.0, 0.0, false, 0.0, 0.0, tf, true)
+    int sp = bb - ba
+    c.slope := sp != 0 ? (pb - pa) / sp : 0.0
+    float tol = nz(atr_v, 1.0) * 0.25
+    int hits = 0, int da = 0
+    float press = 0.0, float brk = 0.0, float fail = 0.0
+    bool prev = false
+    for i = 1 to math.min(100, bar_index)
+        int bi = bar_index - i
+        if bi >= ba
+            float ref = pa + c.slope * (bi - ba)
+            bool touched = high[i] >= ref - tol and low[i] <= ref + tol
+            if touched and not prev
+                hits += 1
+                float raw_d = ctx.unified_delta // Approximation for historical scan using current context flow direction bias
+                if _sgn(raw_d) == dir
+                    da += 1
+                press += (close[i] > open[i] ? 1.0 : close[i] < open[i] ? -1.0 : 0.0) * dir
+                brk += (dir == 1 ? close[i] > ref + tol * 0.15 : close[i] < ref - tol * 0.15) ? 1.0 : 0.0
+                fail += (dir == 1 ? close[i] < ref : close[i] > ref) ? 1.0 : 0.0
+            prev := touched
+    c.hit_count := hits, c.decay := _siege_decay(hits)
+    c.pressure := hits > 0 ? press / hits : 0.0, c.delta_align := hits > 0 ? float(da) / float(hits) : 0.0
+    c.third_push := hits == 3
+    float h = math.max(float(hits), 1.0)
+    c.break_prob := hits > 0 ? _clamp(0.15 + c.delta_align * 0.30 + math.max(c.pressure, 0.0) * 0.20 + (1.0 - c.decay) * 0.10 + (c.third_push ? 0.10 : 0.0) + brk / h * 0.25, 0.0, 1.0) : 0.0
+    c.fail_prob := hits > 0 ? _clamp(0.10 + (1.0 - c.delta_align) * 0.20 + math.max(-c.pressure, 0.0) * 0.20 + (c.decay < 0.6 ? 0.10 : 0.0) + (c.third_push ? 0.15 : 0.0) + fail / h * 0.25, 0.0, 1.0) : 0.0
+    c
+//@function Updates a complete TimeframeStructure including levels, value area, and siege corridors
+export update_structure(TimeframeStructure ts, float poc, float vah, float val_, array<float> shp, array<int> shb, array<float> slp, array<int> slb, string tf, float atr_v, MarketContext ctx) =>
+    ts.tf := tf, ts.poc := poc, ts.vah := vah, ts.val_ := val_
+    ts.last_update_bar := bar_index
+    ts.is_valid := not na(poc) or array.size(shp) >= 2 or array.size(slp) >= 2
+    array.clear(ts.levels)
+    if not na(poc)
+        array.push(ts.levels, StructureLevel.new(poc, "poc", tf, 1.0, 0, 0, bar_index, 0.0, false, _empty_liq()))
+    if not na(vah)
+        array.push(ts.levels, StructureLevel.new(vah, "vah", tf, 0.8, 0, 0, bar_index, 0.0, false, _empty_liq()))
+    if not na(val_)
+        array.push(ts.levels, StructureLevel.new(val_, "val", tf, 0.8, 0, 0, bar_index, 0.0, false, _empty_liq()))
+    int shc = math.min(array.size(shp), array.size(shb))
+    for i = 0 to (shc > 0 ? shc - 1 : na)
+        float sp = array.get(shp, i), int sb = array.get(shb, i)
+        if not na(sp) and not na(sb)
+            array.push(ts.levels, StructureLevel.new(sp, "swing_high", tf, _clamp(1.0 - float(bar_index - sb) / 500.0, 0.1, 1.0), bar_index - sb, 0, sb, 0.0, false, _empty_liq()))
+    int slc = math.min(array.size(slp), array.size(slb))
+    for i = 0 to (slc > 0 ? slc - 1 : na)
+        float sp = array.get(slp, i), int sb = array.get(slb, i)
+        if not na(sp) and not na(sb)
+            array.push(ts.levels, StructureLevel.new(sp, "swing_low", tf, _clamp(1.0 - float(bar_index - sb) / 500.0, 0.1, 1.0), bar_index - sb, 0, sb, 0.0, false, _empty_liq()))    
+    float rpa = shc >= 2 ? array.get(shp, 1) : na, int rba = shc >= 2 ? array.get(shb, 1) : na
+    float rpb = shc >= 2 ? array.get(shp, 0) : na, int rbb = shc >= 2 ? array.get(shb, 0) : na
+    bool rok = not na(rpa) and not na(rba) and not na(rpb) and not na(rbb) and rbb != rba
+    SiegeCorridor rc = build_corridor(nz(rpa, 0.0), nz(rba, 0), nz(rpb, 0.0), nz(rbb, 1), 1, tf, atr_v, ctx)
+    rc.is_active := rok, ts.res_corridor := rc
+    float spa = slc >= 2 ? array.get(slp, 1) : na, int sba = slc >= 2 ? array.get(slb, 1) : na
+    float spb = slc >= 2 ? array.get(slp, 0) : na, int sbb = slc >= 2 ? array.get(slb, 0) : na
+    bool sok = not na(spa) and not na(sba) and not na(spb) and not na(sbb) and sbb != sba
+    SiegeCorridor sc = build_corridor(nz(spa, 0.0), nz(sba, 0), nz(spb, 0.0), nz(sbb, 1), -1, tf, atr_v, ctx)
+    sc.is_active := sok, ts.sup_corridor := sc
+    float bias = 0.0
+    if not na(poc)
+        bias += close > poc ? 0.25 : -0.25
+    if not na(vah) and not na(val_)
+        bias += close > vah ? 0.25 : close < val_ ? -0.25 : 0.0
+    if rc.is_active
+        bias -= rc.fail_prob * 0.25
+    if sc.is_active
+        bias += sc.fail_prob * 0.25
+    ts.bias := _clamp(bias, -1.0, 1.0)
+    ts
+// ══════════════

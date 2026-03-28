@@ -1,0 +1,344 @@
+//@version=5
+indicator("Bands and Channels Laboratory [DAFE]", shorttitle="🎯B&C", overlay=true, max_bars_back=5000, max_lines_count=500, max_labels_count=500, max_boxes_count=500)
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════
+//  ██████╗  █████╗ ███╗   ██╗██████╗ ███████╗    ██╗      █████╗ ██████╗  ██████╗ ██████╗  █████╗ ████████╗ ██████╗ ██████╗ ██╗   ██╗
+//  ██╔══██╗██╔══██╗████╗  ██║██╔══██╗██╔════╝    ██║     ██╔══██╗██╔══██╗██╔═══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔═══██╗██╔══██╗╚██╗ ██╔╝
+//  ██████╔╝███████║██╔██╗ ██║██║  ██║███████╗    ██║     ███████║██████╔╝██║   ██║██████╔╝███████║   ██║   ██║   ██║██████╔╝ ╚████╔╝ 
+//  ██╔══██╗██╔══██║██║╚██╗██║██║  ██║╚════██║    ██║     ██╔══██║██╔══██╗██║   ██║██╔══██╗██╔══██║   ██║   ██║   ██║██╔══██╗  ╚██╔╝  
+//  ██████╔╝██║  ██║██║ ╚████║██████╔╝███████║    ███████╗██║  ██║██████╔╝╚██████╔╝██║  ██║██║  ██║   ██║   ╚██████╔╝██║  ██║   ██║   
+//  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝    ╚══════╝╚═╝  ╚═╝╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝   ╚═╝   
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════
+//                              DAFE Trading Systems - Dskyz
+//                         "The Ultimate Volatility & Envelope Engine"
+//                    40+ Band Types × 6 Visualization Modes × MTF Horizon
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════
+// ℹ️ TOOLTIPS
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════
+var string TT_BAND = "🎯 BAND TYPE\n\nSelect from 14 band calculation methods:\n• Classic: Bollinger, Keltner, Donchian\n• Statistical: Parkinson, Yang-Zhang\n• DAFE Proprietary: Quantum, Neural, Gravity"
+var string TT_BASIS = "📊 BASIS ALGORITHM\n\n22 center line calculations from SMA to advanced adaptive methods like KAMA, VIDYA, and DAFE proprietary engines."
+var string TT_DEV = "📈 DEVIATION METHOD\n\n16 volatility calculation methods determining band width, from standard deviation to entropy-based measures."
+var string TT_VIZ = "🎨 VISUALIZATION ENGINE\n\n6 stunning visual modes:\n• Quantum Field: Particle probability clouds\n• Plasma Flow: Energy streams\n• Neural Network: Connected nodes\n• Gravity Wells: Gravitational visualization\n• Holographic: Multi-layer prism\n• Nebula Pulse: Breathing glow effects"
+var string TT_MTF = "🌐 MTF HORIZON\n\nProjects band metrics from multiple timeframes into floating display boxes, showing squeeze states, bandwidth, and trends across time horizons."
+var string TT_ZONES = "📍 SMART KILL ZONES\n\nIdentifies high-probability reversal zones where price interacted strongly with bands. Shows historical touch strength and projected levels."
+var string TT_PATTERN = "🔬 PATTERN ENGINE\n\nDetects band patterns:\n• Squeeze Types (Coiling, Compression, Exhaustion)\n• Walking Bands (Strong Trends)\n• Band Divergences\n• Expansion Breakouts"
+var string TT_OPT = "🧪 OPTIMIZER ENGINE\n\nBacktests your band strategy with configurable TP/SL. Shows win rate, profit factor, expectancy, and robustness score."
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📁 INPUT GROUPS
+// ═══════════════════════════════════════════════════════════════════════════════
+string G_BAND     = "═══════════ 🎯 BAND TYPE ═══════════"
+string G_BASIS    = "═══════════ 📊 BASIS (CENTER) ═══════════"
+string G_DEV      = "═══════════ 📈 DEVIATION (WIDTH) ═══════════"
+var G_VIZ = "════════════ 🌌 VISUALIZATION ENGINE ═════════════"
+string G_SIGNALS  = "═══════════ ⚡ SIGNAL ENGINE ═══════════"
+string G_ZONES    = "═══════════ 📍 SMART KILL ZONES ═══════════"
+string G_PATTERN  = "═══════════ 🔬 PATTERN DETECTION ═══════════"
+string G_MTF      = "═══════════ 🌐 MTF HORIZON ═══════════"
+string G_H1       = "═══════════ 🌐 Horizon 1 ═══════════"
+string G_H2       = "═══════════ 🌐 Horizon 2 ═══════════"
+string G_H3       = "═══════════ 🌐 Horizon 3 ═══════════"
+string G_OPT      = "═══════════ 🧪 OPTIMIZER ENGINE ═══════════"
+string G_DASH     = "═══════════ 📋 DASHBOARD ═══════════"
+var G_VISUAL = "════════════ 🎨 VISUALS ═════════════"
+string G_THEME    = "═══════════ 🎨 COLOR THEME ═══════════"
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🎯 INPUTS
+// ═══════════════════════════════════════════════════════════════════════════════
+i_band_type = input.string("Bollinger Bands", "★ Band Type ★", 
+     options=["Bollinger Bands", "Keltner Channel", "Donchian Channel", "Starc Bands", 
+              "Envelope (Percentage)", "Price Channel", "ATR Bands", "Standard Error Bands",
+              "Acceleration Bands", "Chandelier Bands", "DAFE Flux Bands", "DAFE Quantum Bands",
+              "DAFE Gravity Bands", "DAFE Neural Bands"], 
+     group=G_BAND, tooltip=TT_BAND)
+i_length = input.int(20, "Length", minval=2, maxval=500, group=G_BAND)
+i_mult = input.float(2.0, "Multiplier", minval=0.1, maxval=10, step=0.1, group=G_BAND)
+i_src = input.source(close, "Source", group=G_BAND)
+i_basis_type = input.string("SMA", "Basis Algorithm",
+     options=["SMA", "EMA", "WMA", "VWMA", "Hull MA", "KAMA", "VIDYA", "FRAMA",
+              "McGinley Dynamic", "T3 Tillson", "DEMA", "TEMA", "ZLEMA", "ALMA",
+              "SuperSmoother", "Butterworth", "Gaussian", "Laguerre", "Kalman Filter",
+              "DAFE Flux", "DAFE Tensor", "DAFE Phase-Zero"], 
+     group=G_BASIS, tooltip=TT_BASIS)
+i_alma_offset = input.float(0.85, "ALMA Offset", minval=0, maxval=1, step=0.05, group=G_BASIS)
+i_alma_sigma = input.float(6, "ALMA Sigma", minval=1, maxval=20, step=0.5, group=G_BASIS)
+i_laguerre_gamma = input.float(0.5, "Laguerre Gamma", minval=0.1, maxval=0.9, step=0.05, group=G_BASIS)
+i_dev_type = input.string("Standard Deviation", "Deviation Method",
+     options=["Standard Deviation", "Mean Absolute Deviation", "True Range (ATR)",
+              "Interquartile Range", "Sortino (Downside)", "Standard Error",
+              "Parkinson Volatility", "Garman-Klass", "Yang-Zhang", "Chaikin Volatility",
+              "Historical Volatility", "Ulcer Index", "DAFE Entropy", "DAFE Elastic",
+              "DAFE Dark Matter", "DAFE Heisenberg"], 
+     group=G_DEV, tooltip=TT_DEV)
+i_viz_mode = input.string("Quantum Field", "★ Visualization Mode ★",
+     options=[
+         "Standard (Classic)",
+         "Quantum Field",
+         "Neural Network",
+         "Plasma Storm",
+         "Depth Perception",
+         "Spectral Analysis",
+         "Probability Cone",
+         "Heat Map",
+         "Nebula Envelope",
+         "Crystalline Matrix",
+         "Temporal Flux"
+     ], group=G_VIZ, tooltip="Choose your reality-bending visualization")
+i_viz_intensity = input.float(1.0, "Visual Intensity", minval=0.3, maxval=3.0, step=0.1, group=G_VIZ)
+i_viz_particles = input.bool(true, "✨ Particle Effects", group=G_VIZ)
+i_viz_glow = input.bool(true, "💫 Glow & Aura", group=G_VIZ)
+i_viz_animation = input.int(5, "Animation Speed", minval=1, maxval=10, group=G_VIZ)
+i_viz_layers = input.int(3, "Effect Layers", minval=1, maxval=5, group=G_VIZ)
+i_signal_mode = input.string("Smart Composite", "★ Signal Mode ★",
+     options=["Band Touch", "Band Cross", "Squeeze Breakout", "Mean Reversion",
+              "Trend Following", "Bandwidth Expansion", "Smart Composite", "Pattern Based"],
+     group=G_SIGNALS)
+i_show_signals = input.bool(true, "Show Signals", group=G_SIGNALS)
+i_signal_size = input.string("Small", "Signal Size", options=["Tiny", "Small", "Normal"], group=G_SIGNALS)
+i_squeeze_len = input.int(100, "Squeeze Lookback", minval=20, maxval=500, group=G_SIGNALS)
+i_squeeze_threshold = input.float(20, "Squeeze Percentile", minval=1, maxval=50, group=G_SIGNALS)
+i_enable_filters = input.bool(true, "🔬 Enable Signal Filters", group=G_SIGNALS)
+i_filter_volume = input.bool(true, "Volume Filter", group=G_SIGNALS, inline="vol")
+i_vol_mult = input.float(1.2, "×", minval=1, maxval=5, step=0.1, group=G_SIGNALS, inline="vol")
+i_filter_trend = input.bool(true, "ADX Filter", group=G_SIGNALS, inline="adx")
+i_adx_thresh = input.int(20, ">", minval=10, maxval=50, group=G_SIGNALS, inline="adx")
+i_filter_time = input.int(3, "Min Bars Between", minval=0, maxval=50, group=G_SIGNALS)
+i_enable_zones = input.bool(true, "★ Enable Kill Zones ★", group=G_ZONES, tooltip=TT_ZONES)
+i_zone_lookback = input.int(100, "Zone Lookback", minval=20, maxval=500, group=G_ZONES)
+i_max_zones = input.int(5, "Max Zones Per Side", minval=1, maxval=10, group=G_ZONES)
+i_zone_strength = input.int(60, "Min Strength %", minval=30, maxval=95, group=G_ZONES)
+i_zone_size = input.float(0.5, "Zone Height (ATR)", minval=0.1, maxval=2.0, step=0.1, group=G_ZONES)
+i_zone_transparency = input.int(80, "Zone Transparency", minval=50, maxval=95, group=G_ZONES)
+i_show_zone_labels = input.bool(true, "Show Zone Labels", group=G_ZONES)
+i_enable_patterns = input.bool(true, "★ Enable Pattern Detection ★", group=G_PATTERN, tooltip=TT_PATTERN)
+i_pattern_sensitivity = input.float(1.5, "Pattern Sensitivity", minval=0.5, maxval=3.0, step=0.1, group=G_PATTERN)
+i_show_squeeze_type = input.bool(true, "Show Squeeze Classification", group=G_PATTERN)
+i_show_walking = input.bool(true, "Detect Walking Bands", group=G_PATTERN)
+i_show_divergence = input.bool(true, "Detect Band Divergence", group=G_PATTERN)
+i_enable_mtf = input.bool(true, "★ Enable MTF Horizon ★", group=G_MTF, tooltip=TT_MTF)
+i_mtf_offset = input.int(80, "Future Offset (bars)", minval=10, maxval=150, group=G_MTF)
+i_mtf_box_width = input.int(65, "Box Width", minval=20, maxval=100, group=G_MTF)
+i_mtf_box_spacing = input.int(6, "Box Spacing", minval=2, maxval=20, group=G_MTF)
+i_mtf_height = input.int(30, "Box Height %", minval=5, maxval=35, group=G_MTF)
+i_mtf_location = input.string("Bottom", "Vertical Position", options=["Bottom", "Top"], group=G_MTF)
+i_mtf_style = input.string("Flowing Wave", "Display Style", 
+     options=["Flowing Wave", "Gradient Bars", "Neon Pulse", "Crystal Shards"], group=G_MTF)
+i_mtf_glow = input.bool(true, "Glow Effect", group=G_MTF)
+i_mtf_show_labels = input.bool(true, "Show Labels", group=G_MTF)
+i_mtf_show_values = input.bool(true, "Show Values", group=G_MTF)
+i_mtf_depth = input.int(50, "History Depth", minval=10, maxval=80, group=G_MTF)
+i_h1_show = input.bool(true, "Enable Horizon 1", group=G_H1)
+i_h1_tf = input.timeframe("60", "Timeframe", group=G_H1)
+i_h1_metric = input.string("Bandwidth %", "Metric", 
+     options=["Bandwidth %", "%B Position", "Squeeze State", "Band Slope", "Volatility Regime"], group=G_H1)
+i_h1_color = input.color(#00FFAA, "Color", group=G_H1)
+i_h2_show = input.bool(true, "Enable Horizon 2", group=G_H2)
+i_h2_tf = input.timeframe("5", "Timeframe", group=G_H2)
+i_h2_metric = input.string("%B Position", "Metric",
+     options=["Bandwidth %", "%B Position", "Squeeze State", "Band Slope", "Volatility Regime"], group=G_H2)
+i_h2_color = input.color(#FF00FF, "Color", group=G_H2)
+i_h3_show = input.bool(true, "Enable Horizon 3", group=G_H3)
+i_h3_tf = input.timeframe("5", "Timeframe", group=G_H3)
+i_h3_metric = input.string("Squeeze State", "Metric",
+     options=["Bandwidth %", "%B Position", "Squeeze State", "Band Slope", "Volatility Regime"], group=G_H3)
+i_h3_color = input.color(#FFD700, "Color", group=G_H3)
+i_opt_enable = input.bool(false, "★ Enable Optimizer ★", group=G_OPT, tooltip=TT_OPT)
+i_opt_capital = input.float(10000, "Starting Capital", minval=100, group=G_OPT)
+i_opt_position = input.float(10, "Position Size %", minval=1, maxval=100, group=G_OPT)
+i_opt_tp = input.float(2.0, "Take Profit (×ATR)", minval=0.5, maxval=10, step=0.1, group=G_OPT)
+i_opt_sl = input.float(1.5, "Stop Loss (×ATR)", minval=0.5, maxval=10, step=0.1, group=G_OPT)
+i_opt_commission = input.float(0.04, "Commission %", minval=0, maxval=1, step=0.01, group=G_OPT)
+i_opt_signal_type = input.string("Smart Composite", "Signal Type",
+     options=["Smart Composite", "All Signals", "Strong Only", "Pattern Based"], group=G_OPT)
+i_basis_show = input.bool(true, "Show Basis Line", group=G_VISUAL, inline="basis")
+i_basis_color = input.color(#FFFFFF, "", group=G_VISUAL, inline="basis")
+i_basis_width = input.int(2, "Width", minval=1, maxval=5, group=G_VISUAL, inline="basis")
+i_upper_color = input.color(#2962FF, "Upper Band", group=G_VISUAL, inline="upper")
+i_lower_color = input.color(#2962FF, "Lower Band", group=G_VISUAL, inline="lower")
+i_band_width = input.int(1, "Band Width", minval=1, maxval=5, group=G_VISUAL)
+i_show_fill = input.bool(true, "Show Fill", group=G_VISUAL, inline="fill")
+i_fill_bull = input.color(color.new(#26A69A, 85), "Bull", group=G_VISUAL, inline="fill")
+i_fill_bear = input.color(color.new(#EF5350, 85), "Bear", group=G_VISUAL, inline="fill")
+i_adaptive_color = input.bool(true, "🎨 Adaptive Colors", group=G_VISUAL,
+     tooltip="Colors change based on bandwidth and position")
+i_glow_effect = input.bool(true, "✨ Glow Effect", group=G_VISUAL)
+i_show_mid_bands = input.bool(false, "Show ±1σ Bands", group=G_VISUAL)
+i_dash_show = input.bool(true, "★ Show Dashboard ★", group=G_DASH)
+i_dash_size = input.string("Full Dashboard", "Size", 
+     options=["Full Dashboard", "Compact", "Mini"], group=G_DASH)
+i_dash_position = input.string("Top Right", "Position",
+     options=["Top Right", "Top Left", "Bottom Right", "Bottom Left"], group=G_DASH)
+i_dash_text_size = input.string("Normal", "Text Size",
+     options=["Tiny", "Small", "Normal", "Large"], group=G_DASH)
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🎨 COLOR THEME
+// ═══════════════════════════════════════════════════════════════════════════════
+i_theme = input.string("Neon Tokyo", "★ Color Theme ★",
+     options=["Neon Tokyo", "Ocean Depths", "Forest Canopy", "Arctic Aurora", 
+              "Sunset Blaze", "Classic Terminal", "Quantum Dark"],
+     group=G_THEME)
+bullColor = switch i_theme
+    "Neon Tokyo" => #00FFAA
+    "Ocean Depths" => #00CED1
+    "Forest Canopy" => #32CD32
+    "Arctic Aurora" => #00FF7F
+    "Sunset Blaze" => #FFD700
+    "Classic Terminal" => #00FF00
+    "Quantum Dark" => #00FF88
+    => #00FFAA
+bearColor = switch i_theme
+    "Neon Tokyo" => #FF0055
+    "Ocean Depths" => #FF6B6B
+    "Forest Canopy" => #CD5C5C
+    "Arctic Aurora" => #FF4500
+    "Sunset Blaze" => #FF4136
+    "Classic Terminal" => #FF0000
+    "Quantum Dark" => #FF0066
+    => #FF0055
+neutralColor = switch i_theme
+    "Neon Tokyo" => #8899AA
+    "Ocean Depths" => #708090
+    "Forest Canopy" => #8B8B7A
+    "Arctic Aurora" => #B0C4DE
+    "Sunset Blaze" => #AAAAAA
+    "Classic Terminal" => #888888
+    "Quantum Dark" => #8899AA
+    => #8899AA
+accentColor1 = switch i_theme
+    "Neon Tokyo" => #00DDFF
+    "Ocean Depths" => #40E0D0
+    "Forest Canopy" => #98FB98
+    "Arctic Aurora" => #7FFFD4
+    "Sunset Blaze" => #FFA07A
+    "Classic Terminal" => #00FFFF
+    "Quantum Dark" => #00CCFF
+    => #00DDFF
+accentColor2 = switch i_theme
+    "Neon Tokyo" => #FF00FF
+    "Ocean Depths" => #9370DB
+    "Forest Canopy" => #DEB887
+    "Arctic Aurora" => #9932CC
+    "Sunset Blaze" => #FF6347
+    "Classic Terminal" => #FFFF00
+    "Quantum Dark" => #AA00FF
+    => #FF00FF
+accentColor3 = switch i_theme
+    "Neon Tokyo" => #FFFF00
+    "Ocean Depths" => #FF8C00
+    "Forest Canopy" => #FFD700
+    "Arctic Aurora" => #00BFFF
+    "Sunset Blaze" => #FFD700
+    "Classic Terminal" => #FF00FF
+    "Quantum Dark" => #FFCC00
+    => #FFFF00
+squeezeColor = switch i_theme
+    "Neon Tokyo" => #FF8800
+    "Ocean Depths" => #FFA500
+    "Forest Canopy" => #DAA520
+    "Arctic Aurora" => #FFD700
+    "Sunset Blaze" => #FF6600
+    "Classic Terminal" => #FFFF00
+    "Quantum Dark" => #FF8800
+    => #FF8800
+bgColor = switch i_theme
+    "Neon Tokyo" => #0A0A14
+    "Ocean Depths" => #0C1929
+    "Forest Canopy" => #1A1F16
+    "Arctic Aurora" => #0D1B2A
+    "Sunset Blaze" => #1A1209
+    "Classic Terminal" => #000000
+    "Quantum Dark" => #0A0A14
+    => #0A0A14
+frameColor = switch i_theme
+    "Neon Tokyo" => #00DDFF
+    "Ocean Depths" => #1E90FF
+    "Forest Canopy" => #6B8E23
+    "Arctic Aurora" => #7B68EE
+    "Sunset Blaze" => #FF8C00
+    "Classic Terminal" => #333333
+    "Quantum Dark" => #00CCFF
+    => #00DDFF
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📚 TYPE DEFINITIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+type TradeStats
+    int trades = 0
+    int wins = 0
+    int losses = 0
+    float total_pnl = 0.0
+    float win_pnl = 0.0
+    float loss_pnl = 0.0
+    float max_dd = 0.0
+    float peak_equity = 0.0
+    float current_equity = 0.0
+    bool in_trade = false
+    int direction = 0
+    float entry_price = 0.0
+    int entry_bar = 0
+type BandZone
+    float level = 0.0
+    float strength = 0.0
+    int bar_idx = 0
+    bool is_upper = true
+    int touches = 0
+    float delta = 0.0
+chart_high = ta.highest(high, 200)
+chart_low = ta.lowest(low, 200)
+chart_range = chart_high - chart_low
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📐 CORE ARRAYS & VARIABLES
+// ═══════════════════════════════════════════════════════════════════════════════
+var array<float> upper_zones = array.new<float>()
+var array<float> upper_strengths = array.new<float>()
+var array<int> upper_bars = array.new<int>()
+var array<int> upper_touches = array.new<int>()
+var array<float> lower_zones = array.new<float>()
+var array<float> lower_strengths = array.new<float>()
+var array<int> lower_bars = array.new<int>()
+var array<int> lower_touches = array.new<int>()
+var array<box> zone_boxes = array.new<box>()
+var array<label> zone_labels = array.new<label>()
+var array<line> viz_lines = array.new<line>()
+var array<label> viz_labels = array.new<label>()
+var array<box> viz_boxes = array.new<box>()
+var array<float> h1_history = array.new<float>(100, 0.0)
+var array<float> h2_history = array.new<float>(100, 0.0)
+var array<float> h3_history = array.new<float>(100, 0.0)
+var array<float> bandwidth_history = array.new<float>()
+var array<float> pctb_history = array.new<float>()
+f_cleanupLines(arr, max) =>
+    while array.size(arr) > max
+        line.delete(array.shift(arr))
+f_cleanupLabels(arr, max) =>
+    while array.size(arr) > max
+        label.delete(array.shift(arr))
+f_cleanupBoxes(arr, max) =>
+    while array.size(arr) > max
+        box.delete(array.shift(arr))
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📊 BASIS CALCULATION FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+f_sma(src, len) => ta.sma(src, len)
+f_ema(src, len) => ta.ema(src, len)
+f_wma(src, len) => ta.wma(src, len)
+f_vwma(src, len) => ta.vwma(src, len)
+f_hull(src, len) =>
+    half_len = math.max(1, int(len / 2))
+    sqrt_len = math.max(1, int(math.sqrt(len)))
+    ta.wma(2 * ta.wma(src, half_len) - ta.wma(src, len), sqrt_len)
+f_kama(src, len) =>
+    change_val = math.abs(src - src[len])
+    volatility = math.sum(math.abs(src - src[1]), len)
+    er = volatility != 0 ? change_val / volatility : 0
+    sc = math.pow(er * (2.0/3 - 2.0/31) + 2.0/31, 2)
+    var float kama = na
+    kama := na(kama) ? src : kama + sc * (src - kama)
+f_vidya(src, len) =>
+    cmo = ta.cmo(src, len)
+    alpha = 2.0 / (len + 1)
+    abs_cmo = math.abs(cmo) / 100
+    var float vidya = na
+    vidya := na(vidya) ? src : alpha * abs_cmo * src + (1 - alpha * abs_cmo) * nz(vidya[1])
+f_frama(src, len) =>
+    half_len = math.max(1, int(len / 2))
+    n3 = (ta.highest(high, len) - ta.lowest(low, len)) / len
+    n1 = (ta.highest(high, half_len) - ta.lowest(low, half_len)) / half_len
+    n2 =
