@@ -1,69 +1,181 @@
-# Dskyz — DAFE Trading Systems: Open-Source Collection
+# Dskyz DAFE — Open-Source Pine Script Collection
 
-> **A professional-grade PineScript ecosystem** — manifold geometry, reinforcement learning, DSP filters, 55+ moving averages, 30+ RSI engines, 40+ volatility algorithms, multi-timeframe order flow integration, and a full library infrastructure for building institutional-grade indicators.
-
----
-
-## 📦 What's in This Repo?
-
-| File | Type | Description |
-|------|------|-------------|
-| [`Riemannian_Dreamer_Manifold_Engine.pine`](Riemannian_Dreamer_Manifold_Engine.pine) | Indicator (v6) | Markets as curved Riemannian manifolds + Dreamer RL world model |
-| [`RSI: Evolved [DAFE].pine`](<RSI: Evolved [DAFE].pine>) | Indicator (v5) | 30+ RSI engine families + 15+ smoothers + divergence + MTF dashboard |
-| [`BandsandChannelsLaboratory.pine`](BandsandChannelsLaboratory.pine) | Indicator (v5) | 40+ volatility algorithms — basis, deviation, band type modular system |
-| [`WHF - Wave Health and Failure v6`](<WHF - Wave Health and Failure v6>) | Indicator (v6) | Neural adaptive wave scoring — ML + Thompson Sampling + Wick Physics |
-| [`MA-trix Laboratory `](<MA-trix Laboratory >) | Indicator (v5) | 55+ moving average algorithms with smart signal filters |
-| [`369`](369) | Indicator | 369 Vector Equilibrium — Gann geometry + Bayesian KNN + Hurst |
-| [`Tick Asymmetry Index`](<Tick Asymmetry Index>) | Indicator | Order flow TAI — footprint + heuristic tick imbalance estimation |
-| [`safe cuz lib.pine`](<safe cuz lib.pine>) | Library (v5) | DafeVisLib — themes, gradients, candle diagnostics, auto plot config |
-| [`Market Structure Lib`](<Market Structure Lib>) | Library (v5) | Multi-TF market architecture — POC/VA, siege corridors, confluence zones |
-| [`DafeVis Lib`](<DafeVis Lib>) | Library | Extended visualization and dashboard system |
-| [`RSI:evolved.md`](RSI:evolved.md) | Docs | RSI: Evolved manual — all engines, smoothers, modules explained |
-| [`Bands and Channels Laboratory.md`](<Bands and Channels Laboratory.md>) | Docs | Bands Laboratory manual — algorithms, patterns, signals |
+> **DAFE** — *Dynamic Adaptive Forecasting Engine*
+>
+> A curated collection of Pine Script v6 indicators built on the DAFE
+> framework.  Each script leverages machine-learning, Bayesian inference, and
+> advanced market-structure logic to produce high-confidence, adaptive trading
+> signals.
 
 ---
 
-## 🗺️ Learning Path
+## 📁 Repository Structure
 
-If you're new to this collection, read in this order:
+```
+.
+├── scripts/                        # Pine Script v6 source files (.pine)
+│   ├── 369-vector-equilibrium.pine # 369 Vector Equilibrium [DAFE]
+│   └── whf-wave-health-failure.pine # WHF — Wave Health & Failure Engine
+├── tools/                          # Python data-collection & comparison utilities
+│   ├── collect_data.py             # Parses .pine files → JSON metadata report
+│   ├── compare_repos.py            # Compares local scripts vs GitHub ecosystem
+│   └── requirements.txt            # Python dependencies (requests)
+├── docs/                           # Generated reports (git-ignored by default)
+│   └── collected_metadata.json     # Output of collect_data.py
+├── .gitignore
+├── LICENSE
+└── README.md
+```
 
-1. **[`LEARNING_GUIDE.md`](LEARNING_GUIDE.md)** — Start here. Structured walkthrough of every master-level pattern used across the codebase: custom types, libraries, arrays, footprint data, z-scoring, Hurst exponent, DSP filters, neural networks in Pine, Thompson Sampling, and more. All examples are drawn directly from these files.
-
-2. **[`safe cuz lib.pine`](<safe cuz lib.pine>)** — Read the library first. It shows the cleanest, most teachable examples of `export type`, `export` functions, theme systems, and statistical helpers.
-
-3. **[`MA-trix Laboratory `](<MA-trix Laboratory >)** — A self-contained indicator. See how 55+ algorithms are organized with `input.string` option arrays, tooltip groups, and adaptive filters.
-
-4. **[`BandsandChannelsLaboratory.pine`](BandsandChannelsLaboratory.pine)** and **[`RSI: Evolved [DAFE].pine`](<RSI: Evolved [DAFE].pine>)** — Study the modular algorithm selection pattern and multi-mode signal architecture.
-
-5. **[`WHF - Wave Health and Failure v6`](<WHF - Wave Health and Failure v6>)** — Introduces library imports (`import DskyzInvestments/...`), ML engine, and Thompson Sampling.
-
-6. **[`Riemannian_Dreamer_Manifold_Engine.pine`](Riemannian_Dreamer_Manifold_Engine.pine)** — The flagship. Differential geometry, Hurst-modulated pivots, footprint integration, RL world model, GRPO policy optimization.
-
----
-
-## 🧠 Key Concepts at a Glance
-
-| Concept | Where to Find It |
-|---------|-----------------|
-| `export type` UDTs (User-Defined Types) | `safe cuz lib.pine`, `Market Structure Lib` |
-| `library()` / `import` / `export` pattern | `safe cuz lib.pine`, `Market Structure Lib` |
-| Dynamic arrays as ring buffers | `Riemannian_Dreamer_Manifold_Engine.pine` |
-| `request.footprint()` order flow | `Riemannian_Dreamer_Manifold_Engine.pine`, `Tick Asymmetry Index` |
-| Z-score normalization | `Riemannian_Dreamer_Manifold_Engine.pine` (`zscore()` helper) |
-| Hurst exponent (R/S analysis) | `Riemannian_Dreamer_Manifold_Engine.pine` (`f_hurstExponent()`) |
-| Ricci curvature approximation | `Riemannian_Dreamer_Manifold_Engine.pine` |
-| Neural network forward pass + weight update | `WHF - Wave Health and Failure v6` (via `DafeRLMLLib`) |
-| Thompson Sampling bandit | `WHF - Wave Health and Failure v6` (via `DafeSPALib`) |
-| GRPO policy optimization | `Riemannian_Dreamer_Manifold_Engine.pine` |
-| DSP filters (Butterworth, SuperSmoother) | `MA-trix Laboratory `, `RSI: Evolved [DAFE].pine` |
-| Multi-timeframe structure | `Market Structure Lib`, `RSI: Evolved [DAFE].pine` |
-| Adaptive color themes | `safe cuz lib.pine` (`get_theme()`) |
-| Auto plot configuration | `safe cuz lib.pine` (`auto_config()`) |
-| Signal filter pipeline | `MA-trix Laboratory `, `BandsandChannelsLaboratory.pine` |
-| Elliott Wave scoring | `Riemannian_Dreamer_Manifold_Engine.pine` (`f_impulse_score()`) |
+> **Legacy files** (`369` and `WHF - Wave Health and Failure v6`) are kept at
+> the repo root for backward-compatibility.  The canonical copies with proper
+> `.pine` extensions live under `scripts/`.
 
 ---
 
-## 📄 License
+## 🗂 Scripts
 
-MIT © 2026 ainell-owi
+### ⬡ 369 Vector Equilibrium \[DAFE\]
+`scripts/369-vector-equilibrium.pine` — 802 lines — Pine Script v6
+
+A standalone overlay indicator combining sacred geometry (Rodin/369 coil
+resonance, Gann angles) with modern quantitative techniques:
+
+| Section | Description |
+| --- | --- |
+| 🎛️ INPUTS | 51 configurable inputs across 8 groups |
+| 🎨 COLOR THEME SYSTEM | Multi-theme visual engine |
+| ⚙️ UTILITY FUNCTIONS | Math/geometry helpers |
+| 📐 CORE SERIES | EMA-based vector & equilibrium series |
+| 📊 FOOTPRINT DELTA ENGINE | Tick-level order-flow pressure delta |
+| 🔬 WPK REGIME ENGINE | Hurst exponent + DFA regime detection |
+| 🔱 SINE-WEIGHTED PITCHFORK ENGINE | Harmonic Fibonacci pitchforks |
+| 🧠 MEMORY BANK (KNN ENGINE) | k-Nearest-Neighbour signal voting |
+| 🌡️ HEATMAP ENGINE | Sparse-decay angular/pressure heatmap |
+| 🎯 SIGNAL GATING ENGINE | Bayesian multi-factor signal filter |
+| 🎨 VISUAL ENGINE | Plots, bubbles, particles, ribbons, Gann rays |
+| 🖥️ PROFESSIONAL DASHBOARD | On-chart HUD table |
+
+**Key features:** no external library imports (fully self-contained),
+Bayesian-weighted signal compositing, KNN memory voting, WPK regime
+modulation, Hurst R/S analysis, Gann angular geometry.
+
+---
+
+### ⚡ WHF — Wave Health & Failure Engine
+`scripts/whf-wave-health-failure.pine` — 768 lines — Pine Script v6
+
+A neural-adaptive overlay indicator built on 7 DAFE shared libraries:
+
+| Library Import | Alias | Purpose |
+| --- | --- | --- |
+| `DskyzInvestments/DafeRLMLLib/1` | `ml` | Reinforcement-learning / ML engine |
+| `DskyzInvestments/DafeSPALib/1` | `spa` | Strategic Policy Allocation |
+| `DskyzInvestments/DafeMLSPABridge/1` | `bridge` | ML ↔ SPA integration bridge |
+| `DskyzInvestments/WickPressureLib/1` | `wpk` | Wick-physics pressure analysis |
+| `DskyzInvestments/DafePatternsLib/1` | `pattern` | Neural pattern recognition |
+| `DskyzInvestments/DafeVisLib/1` | `viz` | Shared visualisation library |
+| `DskyzInvestments/DafeDashboardLib/1` | `dafe` | Shared dashboard / HUD library |
+
+**Core thesis:** *Assume failure until proven healthy.*  Failed moves are
+first-class signals, not noise.
+
+**Key features:** 46 inputs, 7 alert conditions, Thompson-sampling ML
+integration, SPA multi-arm bandit strategy selection, wick-physics regime
+detection, neural zigzag, health trail, candle colouring, AI assistant panel.
+
+---
+
+## 🛠 Tools
+
+### `tools/collect_data.py` — Pine Script Metadata Collector
+
+Parses every `.pine` file in `scripts/` and extracts structured metadata —
+version, title, inputs, library imports, sections, visual features, resource
+limits, and more.  Outputs `docs/collected_metadata.json`.
+
+```bash
+# Install dependencies (one-time)
+pip install -r tools/requirements.txt
+
+# Run the collector
+python tools/collect_data.py
+
+# Custom paths
+python tools/collect_data.py \
+  --scripts-dir scripts/ \
+  --output docs/collected_metadata.json
+```
+
+**Output fields per script:**
+`pine_version`, `script_type`, `title`, `shorttitle`, `overlay`,
+`line_count`, `blank_lines`, `comment_lines`, `limits`, `imports`,
+`inputs` (total, by_type, groups, labels), `sections`, `features`
+(var_declarations, plot_calls, table_new_calls, alert_calls, …).
+
+---
+
+### `tools/compare_repos.py` — GitHub Ecosystem Comparator
+
+Searches GitHub for public Pine Script v6 indicator files and generates a
+Markdown comparison report showing how the DAFE scripts compare against the
+broader ecosystem (line count, imports, inputs, ML usage, alerts, tables, etc.).
+
+```bash
+# With a GitHub personal access token (recommended — higher rate limits)
+export GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
+python tools/compare_repos.py
+
+# Without a token (10 req/min limit — slower)
+python tools/compare_repos.py --max-repos 10
+
+# Custom options
+python tools/compare_repos.py \
+  --token ghp_xxxx \
+  --query "knn bayesian" \
+  --max-repos 30 \
+  --output docs/comparison_report.md \
+  --json
+```
+
+**Options:**
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--token` | `$GITHUB_TOKEN` | GitHub PAT for higher rate limits |
+| `--query` | _(empty)_ | Extra keywords added to the search |
+| `--max-repos` | `20` | Max remote scripts to analyse |
+| `--local-dir` | `scripts/` | Directory containing your `.pine` files |
+| `--output` | `docs/comparison_report.md` | Output Markdown file |
+| `--json` | _(off)_ | Also write raw data as `.json` |
+
+The report includes:
+- Local scripts summary table
+- GitHub ecosystem averages (line count, import rate, input count, ML/table/alert penetration)
+- Per-script comparison with delta vs ecosystem mean
+
+---
+
+## 🚀 Quick Start
+
+```bash
+# 1. Clone
+git clone https://github.com/ainell-owi/Dskyz-DAFE-open-source-collection-
+cd Dskyz-DAFE-open-source-collection-
+
+# 2. Install Python deps
+pip install -r tools/requirements.txt
+
+# 3. Collect metadata
+python tools/collect_data.py
+
+# 4. Compare against GitHub ecosystem
+export GITHUB_TOKEN=<your_token>
+python tools/compare_repos.py
+```
+
+---
+
+## 📜 License
+
+See [LICENSE](LICENSE).
