@@ -1,4 +1,4 @@
-# Using This Repository with Google AI Studio
+.............# Using This Repository with Google AI Studio
 
 > **Attribution Notice:** The Pine Script indicators and libraries documented here were authored by **Dskyz** (DAFE Trading Systems). This repository and guide are maintained by a third party with no affiliation to Dskyz Investments or DAFE Trading Systems. Official website: [dafetradingsystems.com](https://www.dafetradingsystems.com)
 
