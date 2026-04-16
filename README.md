@@ -20,7 +20,6 @@
 | [`DafeVis Lib`](<DafeVis Lib>) | Library | Extended visualization and dashboard system |
 | [`RSI:evolved.md`](RSI:evolved.md) | Docs | RSI: Evolved manual — all engines, smoothers, modules explained |
 | [`Bands and Channels Laboratory.md`](<Bands and Channels Laboratory.md>) | Docs | Bands Laboratory manual — algorithms, patterns, signals |
-| [`MOBILE_PINESCRIPT_IDE_GUIDE.md`](MOBILE_PINESCRIPT_IDE_GUIDE.md) | Docs | GitHub research guide — coding PineScript v6 in a phone-based IDE |
 
 ---
 
